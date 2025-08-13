@@ -1,7 +1,8 @@
-import { Body, Controller, Post, Response } from '@nestjs/common';
+import { Body, Controller, Get, Post, Response, UseGuards, Request } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { AuthInputDTO } from './dtos/auth.dto';
-import type { Response as HttpResponse } from 'express';
+import type { Response as HttpResponse, Request as HttpRequest } from 'express';
+import { JwtAuthGuard } from './guards/auth.guard';
 
 @Controller('auth')
 export class AuthController {
@@ -41,5 +42,22 @@ export class AuthController {
             username: user.username,
             notes: user.notes,
         };
+    }
+
+    @Get('session')
+    @UseGuards(JwtAuthGuard)
+    getSession(@Request() req: HttpRequest) {
+        const user = req.user!;
+        return {
+            userId: user.id,
+            username: user.username,
+            notes: user.notes,
+        }
+    }
+
+    @Get('logout')
+    logout(@Response() res: HttpResponse) {
+        res.clearCookie('jwt');
+        return;
     }
 }

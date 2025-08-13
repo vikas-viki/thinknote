@@ -13,7 +13,14 @@ export class UsersService {
             },
             select: {
                 password: true,
-                notes: true,
+                notes: {
+                    select: {
+                        id: true,
+                        note: true,
+                        title: true,
+                        updatedAt: true
+                    }
+                },
                 id: true
             }
         });

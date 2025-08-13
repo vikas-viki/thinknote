@@ -1,10 +1,16 @@
-import { Notes } from "prisma/client"
+
+export type Note = {
+    id: string,
+    note: string,
+    title: string,
+    updatedAt: Date
+}
 
 export type User = {
     userId: string
     username: string,
     password: string
-    notes: Notes[]
+    notes: Note[]
 }
 
 export type NewUser = {

@@ -30,6 +30,7 @@ export class JwtAuthGuard implements CanActivate {
           id: payload.userId
         },
         select: {
+          id: true,
           username: true,
           notes: true,
         }

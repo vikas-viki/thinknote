@@ -37,7 +37,6 @@ export class AuthService {
             return null;
         }
         const valid = this.compare(data.password, user.password);
-        console.log({ valid })
         if (!valid) {
             return null;
         }
