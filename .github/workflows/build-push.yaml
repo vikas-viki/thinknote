@@ -54,6 +54,7 @@ jobs:
 
             - name: Upload env files via scp
               run: |
+                ls -a
                 scp -o StrictHostKeyChecking=no 'env.gpg' ubuntu@${{ secrets.EC2_HOST }}:~/server/
                 ssh -o StrictHostKeyChecking=no ubuntu@${{ secrets.EC2_HOST }} "rm -f ~/server/.env"
 
