@@ -55,7 +55,7 @@ jobs:
             - name: Upload env files via scp
               run: |
                 ssh -o StrictHostKeyChecking=no ubuntu@${{ secrets.EC2_HOST }} "rm -f ~/server/.env"
-                scp -o StrictHostKeyChecking=no ./env.gpg ubuntu@${{ secrets.EC2_HOST }}:~/server/
+                scp -o StrictHostKeyChecking=no env.gpg ubuntu@${{ secrets.EC2_HOST }}:~/server/
 
             - name: Deploy server on EC2
               uses: appleboy/ssh-action@v1.0.3
