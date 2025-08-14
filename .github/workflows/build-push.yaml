@@ -55,7 +55,7 @@ jobs:
             - name: Upload env files via scp
               run: |
                 ls -a
-                scp -o StrictHostKeyChecking=no 'env.gpg' ubuntu@${{ secrets.EC2_HOST }}:~/server/
+                scp -o StrictHostKeyChecking=no '.env.gpg' ubuntu@${{ secrets.EC2_HOST }}:~/server/
                 ssh -o StrictHostKeyChecking=no ubuntu@${{ secrets.EC2_HOST }} "rm -f ~/server/.env"
 
             - name: Deploy server on EC2
@@ -70,7 +70,7 @@ jobs:
                     docker pull $IMAGE_NAME
                     docker stop server || true
                     docker rm server || true
-                    cd ~/server && gpg --batch --passphrase ${{secrets.GPG_SECRET}} --output '.env' --decrypt 'env.gpg' && docker run -d --name server --env-file '.env' -p 3000:3000 $IMAGE_NAME
+                    cd ~/server && gpg --batch --passphrase ${{secrets.GPG_SECRET}} --output '.env' --decrypt '.env.gpg' && docker run -d --name server --env-file '.env' -p 3000:3000 $IMAGE_NAME
 
        
     
