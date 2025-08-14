@@ -6,6 +6,7 @@ import {
   Param,
   Patch,
   Post,
+  Query,
   Request,
   UseGuards,
 } from '@nestjs/common';
@@ -19,23 +20,29 @@ import type { Request as HttpRequest } from 'express';
 export class NoteController {
   constructor(private noteService: NoteService) { }
 
+  @Get(':id')
+  async getNote(@Param('id') id: string, @Request() req: HttpRequest) {
+    return await this.noteService.getNote(id, req.user!.id);
+  }
+
   @Get()
-  getAllNotes(@Request() req: HttpRequest) {
-    return this.noteService.getAllNotes(req);
+  async getAllNotes(@Query('page') page: string, @Request() req: HttpRequest) {
+    const pageNumber = Number(page);
+    return await this.noteService.getAllNotes(pageNumber, req.user!.id);
   }
 
   @Post()
-  addNewNote(@Body() data: NoteDataDTO, @Request() req: HttpRequest) {
-    return this.noteService.addNewNote(data, req);
+  async addNewNote(@Body() data: NoteDataDTO, @Request() req: HttpRequest) {
+    return await this.noteService.addNewNote(data, req);
   }
 
   @Delete(':id')
-  deleteNote(@Param('id') id: string) {
-    return this.noteService.deleteNote(id);
+  async deleteNote(@Param('id') id: string) {
+    return await this.noteService.deleteNote(id);
   }
 
   @Patch('')
-  updateNote(@Body() data: UpdateNoteDataDTO) {
-    return this.noteService.updateNote(data);
+  async updateNote(@Body() data: UpdateNoteDataDTO) {
+    return await this.noteService.updateNote(data);
   }
 }

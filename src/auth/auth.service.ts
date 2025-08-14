@@ -25,8 +25,7 @@ export class AuthService {
         return {
             accessToken,
             userId: user.userId,
-            username: user.username,
-            notes: user.notes
+            username: user.username
         }
     }
 
@@ -43,8 +42,7 @@ export class AuthService {
 
         return {
             userId: user.userId,
-            username: user.username,
-            notes: user.notes
+            username: user.username
         };
     }
 
@@ -75,7 +73,6 @@ export class AuthService {
             accessToken,
             userId: newUser.userId,
             username: newUser.username,
-            notes: []
         }
     }
 }

@@ -21,8 +21,7 @@ export class AuthController {
 
         return {
             userId: user.userId,
-            username: user.username,
-            notes: user.notes,
+            username: user.username
         };
     }
 
@@ -39,8 +38,7 @@ export class AuthController {
 
         return {
             userId: user.userId,
-            username: user.username,
-            notes: user.notes,
+            username: user.username
         };
     }
 
@@ -50,14 +48,16 @@ export class AuthController {
         const user = req.user!;
         return {
             userId: user.id,
-            username: user.username,
-            notes: user.notes,
+            username: user.username
         }
     }
 
     @Get('logout')
-    logout(@Response() res: HttpResponse) {
-        res.clearCookie('jwt');
-        return;
+    logout(@Response({ passthrough: true }) res: HttpResponse) {
+        console.log('logout')
+        res.cookie('jwt', '', {
+            maxAge: 1
+        })
+        return 'Logout successful';
     }
 }

@@ -31,8 +31,7 @@ export class JwtAuthGuard implements CanActivate {
         },
         select: {
           id: true,
-          username: true,
-          notes: true,
+          username: true
         }
       });
 
