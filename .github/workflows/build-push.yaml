@@ -1,0 +1,75 @@
+name: build and deploy
+
+on:
+    push:
+        branches: [main]
+
+jobs:
+    builder:
+        runs-on: ubuntu-latest
+
+        env: 
+            ECR_REGISTRY: ${{secrets.ECR_REGISTRY}}
+            ECR_REPOSITORY: ${{secrets.ECR_REPOSITORY}}
+            IMAGE_TAG: latest
+
+        steps:
+            - name: Checkout repo
+              uses: actions/checkout@v4
+
+            - name: Configure AWS credentials
+              uses: aws-actions/configure-aws-credentials@v2
+              with:
+                    aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+                    aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+                    aws-region: ap-south-1
+
+            - name: Login to ECR
+              id: login-ecr
+              uses: aws-actions/amazon-ecr-login@v2
+            
+            - name: Build and push backend
+              run: |
+                IMAGE_NAME=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+                docker build . -t $IMAGE_NAME
+                docker push $IMAGE_NAME
+        
+    deploy:
+        runs-on: ubuntu-latest
+        needs: builder
+
+        env: 
+            ECR_REGISTRY: ${{secrets.ECR_REGISTRY}}
+            ECR_REPOSITORY: ${{secrets.ECR_REPOSITORY}}
+            IMAGE_TAG: latest
+
+        steps: 
+            - name: Checkout repo
+              uses: actions/checkout@v4
+
+            - name: Start ssh-agent
+              uses: webfactory/ssh-agent@v0.9.0
+              with:
+                ssh-private-key: ${{ secrets.EC2_SSH_KEY }}
+
+            - name: Upload env files via scp
+              run: |
+                ssh -o StrictHostKeyChecking=no ubuntu@${{ secrets.EC2_HOST }} "rm -f ~/server/.env"
+                scp -o StrictHostKeyChecking=no ./env.gpg ubuntu@${{ secrets.EC2_HOST }}:~/server/
+
+            - name: Deploy server on EC2
+              uses: appleboy/ssh-action@v1.0.3
+              with:
+                host: ${{ secrets.EC2_HOST }}
+                username: ubuntu
+                key: ${{ secrets.EC2_SSH_KEY }}
+                script: |
+                    IMAGE_NAME=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+                    aws ecr get-login-password --region ap-south-1 | docker login --username AWS --password-stdin $ECR_REGISTRY
+                    docker pull $IMAGE_NAME
+                    docker stop server || true
+                    docker rm server || true
+                    cd ~/server && gpg --batch --passphrase ${{secrets.GPG_SECRET}} --output '.env' --decrypt 'env.gpg' && docker run -d --name server --env-file '.env' -p 3000:3000 $IMAGE_NAME
+
+       
+    
