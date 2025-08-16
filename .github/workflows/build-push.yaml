@@ -42,6 +42,7 @@ jobs:
             ECR_REGISTRY: ${{secrets.ECR_REGISTRY}}
             ECR_REPOSITORY: ${{secrets.ECR_REPOSITORY}}
             IMAGE_TAG: latest
+            GPG_SECRET: ${{secrets.GPG_SECRET}}
 
         steps: 
             - name: Checkout repo
@@ -64,14 +65,16 @@ jobs:
                 host: ${{ secrets.EC2_HOST }}
                 username: ubuntu
                 key: ${{ secrets.EC2_SSH_KEY }}
+                envs: ECR_REGISTRY,ECR_REPOSITORY,IMAGE_TAG,GPG_SECRET
                 script: |
-                    IMAGE_NAME="$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
+                    IMAGE_NAME=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
                     echo $IMAGE_NAME
                     aws ecr get-login-password --region ap-south-1 | docker login --username AWS --password-stdin $ECR_REGISTRY
                     docker pull $IMAGE_NAME
                     docker stop server || true
                     docker rm server || true
-                    cd ~/server && gpg --batch --passphrase ${{secrets.GPG_SECRET}} --output '.env' --decrypt '.env.gpg' && docker run -d --name server --env-file '.env' -p 3000:3000 $IMAGE_NAME
+                    cd ~/server && gpg --batch --passphrase $GPG_SECRET --output '.env' --decrypt '.env.gpg'
+                    docker run -d --name server --env-file '.env' -p 3000:3000 $IMAGE_NAME
 
        
     
